@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv11' 1, 'ss01' 1, 'ss03' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-slate-50/60 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200;
+  }
+  *:focus-visible {
+    @apply outline-none ring-2 ring-brand-500/80 ring-offset-2 ring-offset-white dark:ring-offset-slate-950;
+  }
+  ::selection {
+    @apply bg-brand-500/20 text-brand-900 dark:text-brand-200;
+  }
+  h1, h2, h3, h4 {
+    @apply tracking-tight font-semibold text-slate-900 dark:text-white;
+  }
+}
+
+@layer components {
+  /* ---- Premium Buttons ---- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold tracking-wide transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 select-none;
+  }
+  .btn-primary {
+    @apply btn bg-slate-900 text-white shadow-[0_1px_2px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-slate-800 active:scale-[0.98] dark:bg-white dark:text-slate-950 dark:shadow-[0_1px_2px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.9)] dark:hover:bg-slate-100;
+  }
+  .btn-secondary {
+    @apply btn border border-slate-200/90 bg-white text-slate-700 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:border-slate-300 hover:bg-slate-50 dark:border-white/[0.09] dark:bg-slate-900/90 dark:text-slate-200 dark:hover:border-white/[0.16] dark:hover:bg-slate-850 active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply btn text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.05] dark:hover:text-slate-100 active:scale-[0.98];
+  }
+  .btn-accent {
+    @apply btn bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white shadow-[0_1px_2px_rgba(0,0,0,0.12),0_4px_16px_rgba(16,185,129,0.3)] hover:brightness-105 active:scale-[0.98];
+  }
+
+  /* ---- Inputs ---- */
+  .input {
+    @apply block w-full rounded-xl border border-slate-200/90 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-all duration-150 focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/[0.09] dark:bg-slate-900/90 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-brand-400 dark:focus:ring-brand-400/20 shadow-[0_1px_2px_rgba(0,0,0,0.02)];
+  }
+  .label {
+    @apply mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400;
+  }
+
+  /* ---- Cards ---- */
+  .card {
+    @apply rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_1px_3px_0_rgba(15,23,42,0.03),0_1px_2px_-1px_rgba(15,23,42,0.02)] backdrop-blur-md transition-all duration-200 dark:border-white/[0.07] dark:bg-slate-900/75 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)];
+  }
+  .card-interactive {
+    @apply card hover:border-slate-300 dark:hover:border-white/[0.14] hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05),0_8px_10px_-6px_rgba(0,0,0,0.04)] dark:hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] cursor-pointer;
+  }
+
+  /* ---- Badges ---- */
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase;
+  }
+
+  /* ---- Glass container ---- */
+  .glass-panel {
+    @apply rounded-2xl border border-slate-200/60 bg-white/80 backdrop-blur-xl shadow-soft dark:border-white/[0.08] dark:bg-slate-925/80;
+  }
+}
+
+@layer utilities {
+  /* Tabular numbers for money/data alignment */
+  .tnum {
+    font-feature-settings: 'tnum' 1, 'cv11' 1;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Hides the spinner on number inputs (cleaner amount field) */
+  .no-spin::-webkit-outer-spin-button,
+  .no-spin::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .no-spin {
+    -moz-appearance: textfield;
+  }
+
+  /* Custom thin scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
+  }
+}

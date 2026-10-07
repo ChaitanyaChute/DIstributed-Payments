@@ -1,0 +1,154 @@
+import { FormEvent, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+import { extractErrorMessage } from '../api/client';
+import AuthShell from '../components/AuthShell';
+import Spinner from '../components/Spinner';
+
+export default function Login() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from ?? '/dashboard';
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await login(email, password, rememberMe);
+      toast.success(
+        rememberMe ? 'Welcome back. Session will last 24 hours.' : 'Welcome back.',
+      );
+      navigate(from, { replace: true });
+    } catch (err) {
+      toast.error(extractErrorMessage(err));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <AuthShell
+      footer={
+        <div className="mt-5 flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest text-slate-400 dark:text-slate-500">
+          <span>JWT Sessions</span>
+          <span>•</span>
+          <span>Zero-Variance ACID</span>
+          <span>•</span>
+          <span>Hardware Encrypted</span>
+        </div>
+      }
+    >
+      <div>
+        <h1 className="text-xl font-bold tracking-tight text-slate-950 dark:text-white">
+          Sign In to PayRail
+        </h1>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          Access your institutional wallet and settlement ledger.
+        </p>
+      </div>
+
+      <form onSubmit={onSubmit} className="mt-6 space-y-4">
+        <div>
+          <label className="label" htmlFor="email">
+            Account Email
+          </label>
+          <div className="relative">
+            <Mail
+              size={14}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              id="email"
+              type="email"
+              required
+              autoComplete="email"
+              className="input pl-10"
+              placeholder="you@payrail.dev"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label className="label !mb-0" htmlFor="password">
+              Password
+            </label>
+            <Link
+              to="/forgot-password"
+              className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+            >
+              Forgot password?
+            </Link>
+          </div>
+          <div className="relative">
+            <Lock
+              size={14}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              required
+              autoComplete="current-password"
+              minLength={8}
+              className="input pl-10 pr-10"
+              placeholder="••••••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors dark:text-slate-500 dark:hover:text-slate-300"
+              tabIndex={-1}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+            </button>
+          </div>
+        </div>
+
+        <label
+          htmlFor="remember"
+          className="flex cursor-pointer select-none items-center gap-2 text-xs text-slate-700 dark:text-slate-300 pt-1"
+        >
+          <input
+            id="remember"
+            type="checkbox"
+            className="h-3.5 w-3.5 rounded border-slate-300 dark:border-slate-700 text-emerald-600 dark:bg-slate-800 focus:ring-emerald-500"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+          />
+          <span>
+            Remember credentials{' '}
+            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">(24h valid session)</span>
+          </span>
+        </label>
+
+        <button type="submit" disabled={submitting} className="btn-primary mt-2 w-full">
+          {submitting ? <Spinner /> : <>Authenticate & Continue <ArrowRight size={14} /></>}
+        </button>
+      </form>
+
+      <div className="mt-6 border-t border-slate-100 dark:border-white/[0.06] pt-5 text-center">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          New to PayRail?{' '}
+          <Link to="/register" className="font-semibold text-emerald-600 hover:underline dark:text-emerald-400">
+            Open commercial account
+          </Link>
+        </p>
+      </div>
+    </AuthShell>
+  );
+}
