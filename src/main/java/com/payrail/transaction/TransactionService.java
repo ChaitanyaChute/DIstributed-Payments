@@ -1,0 +1,76 @@
+package com.payrail.transaction;
+
+import com.payrail.transaction.dto.TransactionView;
+import com.payrail.user.User;
+import com.payrail.user.UserRepository;
+import com.payrail.wallet.Wallet;
+import com.payrail.wallet.WalletRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class TransactionService {
+
+    private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
+    private final WalletRepository walletRepository;
+
+    /** Returns transactions where the caller is either sender or receiver. */
+    @Transactional(readOnly = true)
+    public Page<TransactionView> getOwnHistory(String email, int page, int size) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        Wallet wallet = walletRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Wallet not found"));
+
+        return transactionRepository
+                .findByWalletId(wallet.getId(), PageRequest.of(page, size))
+                .map(t -> {
+                    boolean sent = t.getSenderWallet().getId().equals(wallet.getId());
+                    // Refund button shows for the RECIPIENT of the original (they have
+                    // the money; only they can voluntarily return it). The sender
+                    // cannot unilaterally claw funds back -- they'd need an admin
+                    // to force-refund.
+                    boolean refundable = !sent
+                            && t.getStatus() == TransactionStatus.COMPLETED
+                            && t.getRefundOfTransactionId() == null;
+                    return new TransactionView(
+                            t.getId(),
+                            t.getSenderWallet().getUser().getEmail(),
+                            t.getReceiverWallet().getUser().getEmail(),
+                            t.getAmount(),
+                            t.getStatus(),
+                            sent ? "SENT" : "RECEIVED",
+                            t.getRefundOfTransactionId(),
+                            refundable,
+                            t.getCreatedAt()
+                    );
+                });
+    }
+
+    /** Admin view: every transaction in the system, newest first. */
+    @Transactional(readOnly = true)
+    public Page<TransactionView> getAllTransactions(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return transactionRepository.findAll(pageable)
+                .map(t -> new TransactionView(
+                        t.getId(),
+                        t.getSenderWallet().getUser().getEmail(),
+                        t.getReceiverWallet().getUser().getEmail(),
+                        t.getAmount(),
+                        t.getStatus(),
+                        null,
+                        t.getRefundOfTransactionId(),
+                        // Admin can refund anything COMPLETED that isn't already a refund.
+                        t.getStatus() == TransactionStatus.COMPLETED && t.getRefundOfTransactionId() == null,
+                        t.getCreatedAt()
+                ));
+    }
+}
